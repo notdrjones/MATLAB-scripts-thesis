@@ -1,0 +1,53 @@
+function [outputArg1,outputArg2] = exportReport(datafolder)
+%UNTITLED Summary of this function goes here
+%   Detailed explanation goes here
+
+% Start by getting the folderlist
+folderlist = getFoldersAndSubfolders(datafolder);
+
+% and set-up the figure
+f = figure;
+f.Units = 'Inches';
+f.Position = [0 0 8.27 11.69];
+
+nFolders = length(folderlist);
+
+tiledlayout(3,3)
+for i=1:nFolders
+    nexttile;
+    currentAx = gca;
+
+    % Open figure
+    figurePath = [datafolder folderlist{i} 'results\wobblePlot.fig'];
+    tempFigure = openfig(figurePath);
+    figure(tempFigure);
+    tempAx = gca;
+    copiedProperties = get(tempAx,{'XLim','YLim','LineWidth','Color','Box'});
+
+    % Copy to currentAx
+    figure(f);
+    copyobj(tempAx.Children,currentAx);
+    drawnow()
+  %  A = get(tempAx);
+%    try
+ %   set(currentAx,A)
+   % catch
+   % end
+
+    close(tempFigure);
+    
+
+    separatedString = split(folderlist{i},'\');
+    titleString = separatedString{2};
+    titleString = strrep(titleString,'_','');
+    t = title(titleString);
+    t.FontSize = 8;
+
+    if mod(i,9)==0 || i == nFolders
+        exportgraphics(f,[datafolder 'report.pdf'],'ContentType','vector','Append',true);
+        clf
+        tiledlayout(3,3);
+    end
+end
+
+end

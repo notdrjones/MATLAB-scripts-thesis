@@ -1,0 +1,25 @@
+function [outputArg1,outputArg2] = fixThetaWrapping(theta)
+%FIXTHETAWRAPPING Summary of this function goes here
+%   Detailed explanation goes her
+
+thetaNew = zeros(size(theta));
+thetaNew(1) = theta;
+
+
+
+% Initial theta values are between -pi/2 and pi/2
+for i=2:size(theta,2)
+    if isnan(theta(i))
+        theta(i) = theta(i-1);
+    end
+    thetaCurrent = theta(i);
+
+    thetaOptions = [thetaCurrent; thetaCurrent-180.*sign(thetaCurrent)];
+
+    thetaPrevious = theta(i-1);
+    
+end
+
+
+end
+

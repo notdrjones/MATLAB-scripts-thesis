@@ -1,0 +1,115 @@
+function [X] = findChangesInXDisplacementSlope(datafolder,thresholdValue)
+%UNTITLED Summary of this function goes here
+%   Detailed explanation goes here
+
+if datafolder(end) == '\'
+else
+    datafolder(end+1) = '\';
+end
+
+datafolder = [datafolder 'translatedAndRotated\'];
+
+% Load up SprB Tracks
+allTracks = importdata([datafolder 'SprBHorizontalTrack.mat']);
+nTracks = length(allTracks);
+
+clf
+tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
+
+for i=1:nTracks
+    track = allTracks{i};
+
+    T = track(:,1);
+    X = track(:,2);
+
+    % Pick one of the two lines below, the only difference is whether or
+    % not a medfilt1 (median filter) is applied to the data when looking
+    % for changes
+
+    [changeFlags,S1,S2] = ischange(medfilt1(X),'linear','Threshold',thresholdValue);
+    %    [changeFlags,S1,S2] = ischange((X),'linear','Threshold',thresholdValue);
+
+    behaviourLine = S1.*(T)+S2;
+
+
+    tile1 = nexttile;
+    plot(T,X,'LineWidth',1.5)
+    hold on;
+    %plot(T(changeFlags),X(changeFlags),'ro');
+    plot(T,behaviourLine,'r-','LineWidth',1.)
+    % In the first tile, first plot the X(t) trace and then the
+    % change-points
+    
+    % REMOVE LATER
+    idx = abs(S1.*(0.1).*20)<0.21;
+    A = find(abs(diff(idx==1))==1);
+
+    plotLimits = tile1.YLim;
+    lowestPoint = plotLimits(1);
+    rectangleSize = abs(diff(plotLimits));
+    for j=1:2:length(A)
+        rectangle('Position',[T(A(j)) lowestPoint abs(diff(T(A(j:j+1)))) rectangleSize],'FaceColor',[0 .5 .5 0.25],'LineStyle','none')
+    end
+    tile1.YLim = plotLimits;
+    pbaspect([1 1 1]);
+
+
+
+    %---
+
+
+
+
+
+
+    pbaspect([1 1 1]);
+
+
+    tile2 = nexttile;
+
+    % In the second tile, we plot the slope (i.e. the velocity) and
+    % highlight portions where the velocity is less than 0.15.
+    plot(T,S1.*(0.1).*20,'LineWidth',1.5);
+    hold on
+    idx = abs(S1.*(0.1).*20)<0.21;
+    A = find(abs(diff(idx==1))==1);
+
+    plotLimits = tile2.YLim;
+    lowestPoint = plotLimits(1);
+    rectangleSize = abs(diff(plotLimits));
+    for j=1:2:length(A)
+        rectangle('Position',[T(A(j)) lowestPoint abs(diff(T(A(j:j+1)))) rectangleSize],'FaceColor',[0 .5 .5 0.25],'LineStyle','none')
+    end
+    tile2.YLim = plotLimits;
+    pbaspect([1 1 1]);
+
+
+    %nexttile;
+    %plot(track(:,1), movmean(track(:,3),7));
+    %nexttile;
+    %plot(track(:,1),movmean(track(:,4),7).*0.12);
+
+    setTileProperties(tile1);
+    ylabel(tile1,'x (um)');
+    setTileProperties(tile2);
+    ylabel(tile2,'v (um/s)');
+
+    % Export
+    set(gcf,'color','w');
+    saveas(gcf, [datafolder 'steps.png']);
+    saveas(gcf, [datafolder 'steps.fig']);
+
+
+end
+end
+
+function setTileProperties(ax)
+ax.Box = "off";
+ax.FontName = 'Arial';
+ax.FontSize = 15;
+ax.LineWidth = 1.5;
+ax.TickDir = 'out';
+xlabel(ax,'Time (s)');
+%ylabel(ax, 'x (um)');
+
+end

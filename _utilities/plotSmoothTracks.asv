@@ -1,0 +1,11 @@
+function [outputArg1,outputArg2] = plotSmoothTracks(xyzPoints,smoothingWindow)
+%PLOTSMOOTHTRACKS Summary of this function goes here
+%   Detailed explanation goes here
+
+txyzPointsSmoothed = movmean(txyzPoints,smoothingWindow,1);
+
+t = txyzPoints(:,1);
+x = txyztPoints(:,2);
+
+end
+
